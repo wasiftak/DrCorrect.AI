@@ -1,39 +1,44 @@
 import tkinter as tk
-from tkinter import scrolledtext, messagebox
+import ttkbootstrap as ttk
+from ttkbootstrap.scrolled import ScrolledText
+from tkinter import messagebox
+import os
 from text_processor import MedicalTextProcessor
 
-class DrCorrectApp(tk.Tk):
+class DrCorrectApp(ttk.Window):
     """The main GUI class for the application."""
     def __init__(self):
-        super().__init__()
+        super().__init__(themename="litera") 
+        
         self.processor = MedicalTextProcessor()
         self.title("DrCorrect.AI - Clinical Notes Assistant")
         self.geometry("1000x700")
 
-        main_frame = tk.Frame(self)
+        main_frame = ttk.Frame(self)
         main_frame.pack(expand=True, fill='both', padx=10, pady=10)
 
-        editor_frame = tk.Frame(main_frame)
+        editor_frame = ttk.Frame(main_frame)
         editor_frame.pack(side='left', expand=True, fill='both', padx=(0, 5))
         
-        editor_label = tk.Label(editor_frame, text="Clinical Notes", font=("Arial", 12, "bold"))
+        editor_label = ttk.Label(editor_frame, text="Clinical Notes", font=("Helvetica", 12, "bold"))
         editor_label.pack(anchor='w')
         
-        self.text_widget = scrolledtext.ScrolledText(editor_frame, wrap=tk.WORD, font=("Arial", 12), undo=True)
+        self.text_widget = ScrolledText(editor_frame, wrap=tk.WORD, font=("Helvetica", 11), undo=True)
         self.text_widget.pack(expand=True, fill='both')
         
-        self.suggestion_listbox = tk.Listbox(self, font=("Arial", 10), height=5)
+        self.suggestion_listbox = tk.Listbox(self, font=("Helvetica", 10), height=5)
 
         self._bind_events()
         self.load_default_corpus()
 
     def _bind_events(self):
-        """Binds all necessary events to their handler methods."""
-        self.text_widget.bind("<space>", self._on_space_press)
-        self.text_widget.bind("<KeyRelease>", self._on_key_release)
-        self.text_widget.bind("<Tab>", self._accept_suggestion)
+        """Binds all necessary events to the *internal* text widget."""
+        self.text_widget.text.bind("<space>", self._on_space_press)
+        self.text_widget.text.bind("<KeyRelease>", self._on_key_release)
+        self.text_widget.text.bind("<Tab>", self._accept_suggestion)
         self.suggestion_listbox.bind("<Double-1>", self._accept_suggestion)
-        self.text_widget.bind("<FocusOut>", lambda e: self.suggestion_listbox.place_forget())
+        # The following line was the cause of the problem and has been removed.
+        # self.text_widget.text.bind("<FocusOut>", lambda e: self.suggestion_listbox.place_forget())
 
     def load_default_corpus(self):
         """Loads the vocabulary from the processed text file."""
@@ -64,7 +69,7 @@ class DrCorrectApp(tk.Tk):
         """Handles auto-suggestion on key release."""
         if event.keysym.isalnum() and event.char.strip():
             self.show_suggestions()
-        elif event.keysym in ['BackSpace', 'space', 'Return']:
+        elif event.keysym in ['BackSpace', 'space', 'Return', 'Tab']:
             self.suggestion_listbox.place_forget()
 
     def show_suggestions(self):
@@ -92,11 +97,13 @@ class DrCorrectApp(tk.Tk):
             return "break"
         selection_indices = self.suggestion_listbox.curselection()
         if not selection_indices:
-            return "break"
+            # If nothing is selected, still prevent the default Tab behavior
+            if event and event.keysym == 'Tab':
+                 return "break"
+            return
         
         selected_suggestion = self.suggestion_listbox.get(selection_indices[0])
         
-        # We need the word info to correctly replace the text
         _, start_index, end_index = self.get_current_word_info()
         
         self.text_widget.delete(start_index, end_index)
@@ -109,7 +116,6 @@ class DrCorrectApp(tk.Tk):
         start_index = self.text_widget.index("insert-1c wordstart")
         end_index = self.text_widget.index("insert-1c wordend")
         word_to_check = self.text_widget.get(start_index, end_index).strip()
-        
         if word_to_check:
             corrected_word = self.processor.correct_word(word_to_check.lower())
             if corrected_word and corrected_word != word_to_check.lower():
