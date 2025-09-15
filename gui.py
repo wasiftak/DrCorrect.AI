@@ -4,12 +4,21 @@ from ttkbootstrap.scrolled import ScrolledText
 from tkinter import messagebox
 import os
 from text_processor import MedicalTextProcessor
+from gemini_helper import GeminiHelper # <-- Import the new helper
 
 class DrCorrectApp(ttk.Window):
     """The main GUI class for the application."""
     def __init__(self):
         super().__init__(themename="litera") 
         
+        # --- API KEY INTEGRATION ---
+        GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
+        if not GEMINI_API_KEY:
+            messagebox.showerror("API Key Error", "GEMINI_API_KEY environment variable not found.\nAI features will be disabled.")
+            self.gemini = None
+        else:
+            self.gemini = GeminiHelper(GEMINI_API_KEY)
+
         self.processor = MedicalTextProcessor()
         self.title("DrCorrect.AI - Clinical Notes Assistant")
         self.geometry("1000x700")
@@ -67,8 +76,6 @@ class DrCorrectApp(ttk.Window):
 
     def _on_key_release(self, event):
         """Handles auto-suggestion on key release."""
-        # --- THIS IS THE FIX ---
-        # Removed 'Up' and 'Down' from this list
         if event.keysym.isalnum() and event.char.strip():
             self.show_suggestions()
         elif event.keysym in ['BackSpace', 'space', 'Return', 'Tab']:
