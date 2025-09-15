@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DrCorrect.AI</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="content-container">
+        <h1>DrCorrect.AI</h1>
+        <div class="subtitle">AI-powered medical terminology assistant</div>
+        <div class="editor-container">
+            <div class="main-content">
+                <textarea id="word-typing-area" class="word-typing-area" placeholder="Start typing your word..."></textarea>
+                <ul id="suggestions-box"></ul>
+            </div>
+            <div class="ai-assistant">
+                <h2>AI Assistant</h2>
+                <div id="ai-output">Select text and right-click to analyze.</div>
+            </div>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html>
