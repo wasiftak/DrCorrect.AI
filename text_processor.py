@@ -1,20 +1,17 @@
+import csv
 from spellchecker import SpellChecker
 
 class TrieNode:
-    """A node in the Trie data structure."""
     def __init__(self):
         self.children = {}
         self.is_end_of_word = False
 
 class MedicalTextProcessor:
-    """Handles all local text processing: suggestions and corrections."""
     def __init__(self):
         self.spell = SpellChecker(language=None, distance=2) 
-        self.trie_root = TrieNode()
-        # self.term_to_code is no longer used with this dataset
+        self.known_words = set()
 
     def _insert_word_into_trie(self, word):
-        """Inserts a single word into our Trie data structure."""
         node = self.trie_root
         for char in word:
             if char not in node.children:
@@ -23,34 +20,39 @@ class MedicalTextProcessor:
         node.is_end_of_word = True
 
     def load_corpus_from_txt(self, filepath):
-        """Loads a large vocabulary from a simple text file."""
         print(f"Loading medical vocabulary from {filepath}...")
         try:
             with open(filepath, mode='r', encoding='utf-8') as infile:
-                # Read all lines and strip whitespace/newlines
-                all_terms = [line.strip() for line in infile]
+                all_terms = {line.strip() for line in infile if line.strip()}
             
-            self.spell.word_frequency.load_words(all_terms)
+            self.known_words = all_terms
+            self.spell.word_frequency.load_words(self.known_words)
             self.trie_root = TrieNode()
-            for term in all_terms:
+            for term in self.known_words:
                 self._insert_word_into_trie(term)
             
-            print(f"Vocabulary loaded with {len(all_terms)} medical terms.")
-            return True, len(all_terms)
+            print(f"Vocabulary loaded with {len(self.known_words)} medical terms.")
+            return True, len(self.known_words)
         except Exception as e:
             print(f"Error loading vocabulary: {e}")
             return False, 0
-            
-    def correct_word(self, word):
-        """Corrects a single word using a more reliable 'candidates' approach."""
+
+    def is_known(self, word):
+        return word.lower() in self.known_words
+
+    def get_correction_candidates(self, word):
+        return self.spell.candidates(word)
+
+    def get_unambiguous_correction(self, word):
+        """
+        Returns a correction only if there is exactly one candidate.
+        """
         candidates = self.spell.candidates(word)
-        if candidates:
+        if candidates and len(candidates) == 1:
             return candidates.pop()
-        else:
-            return word
+        return None # Return None if there are 0 or more than 1 candidates
 
     def get_suggestions(self, prefix):
-        """Gets auto-suggestions for a given prefix using the Trie."""
         if not prefix: return []
         node = self.trie_root
         for char in prefix:
@@ -61,7 +63,6 @@ class MedicalTextProcessor:
         return suggestions
 
     def _dfs_suggest(self, node, current_word, suggestions):
-        """Helper function for DFS traversal to find suggestions."""
         if len(suggestions) >= 5: return
         if node.is_end_of_word: suggestions.append(current_word)
         for char, child_node in sorted(node.children.items()):
