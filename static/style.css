@@ -8,14 +8,36 @@ body {
     justify-content: center;
     align-items: center;
     min-height: 100vh;
+
+    /* --- FINAL BACKGROUND STYLES --- */
+    background-image: url('medical_bg.png'); /* Assumes image is in the 'static' folder */
+    background-repeat: repeat; /* This tiles the image at its original size */
+    animation: slideBackground 60s linear infinite;
+    overflow: hidden;
 }
+
+@keyframes slideBackground {
+    from {
+        /* Start with the pattern at the top-left */
+        background-position: 0 0;
+    }
+    to {
+        /* The final position is the width and height of the image itself.
+           This creates a seamless loop. Assuming a 512px image size. */
+        background-position: 512px 512px;
+    }
+}
+
 .content-container {
     width: 900px;
     background: white;
     padding: 40px;
     border-radius: 10px;
     box-shadow: 0 0 20px rgba(0,0,0,0.05);
+    z-index: 1; 
+    position: relative;
 }
+
 h1 {
     font-family: 'Times New Roman', Times, serif;
     font-size: 3.5em;
@@ -24,20 +46,24 @@ h1 {
     margin-top: 0;
     margin-bottom: 10px;
 }
+
 .subtitle {
     text-align: center;
     margin-bottom: 25px;
     color: #777;
     padding-bottom: 15px;
 }
+
 .editor-container {
     display: flex;
     gap: 40px;
 }
+
 .main-content {
     flex-grow: 1;
     position: relative; /* Needed for positioning the suggestions box */
 }
+
 .ai-assistant {
     width: 300px;
     flex-shrink: 0;
@@ -45,6 +71,7 @@ h1 {
     padding: 20px;
     border-radius: 10px;
 }
+
 .word-typing-area {
     width: 100%;
     height: 500px;
@@ -55,9 +82,11 @@ h1 {
     line-height: 1.5;
     box-sizing: border-box;
 }
+
 .word-typing-area::placeholder {
     color: #ddd;
 }
+
 .ai-assistant h2 {
     font-family: 'Times New Roman', Times, serif;
     letter-spacing: 0.1em;
@@ -65,11 +94,13 @@ h1 {
     padding-bottom: 10px;
     margin-top: 0;
 }
+
 #ai-output {
     height: calc(100% - 50px);
     overflow-y: auto;
     padding: 10px;
 }
+
 #suggestions-box {
     position: absolute;
     border: 1px solid #ddd;
@@ -83,10 +114,12 @@ h1 {
     overflow-y: auto;
     display: none; /* Hidden by default */
 }
+
 #suggestions-box li {
     padding: 8px 12px;
     cursor: pointer;
 }
+
 #suggestions-box li.selected {
     background-color: #f0f0f0;
 }
