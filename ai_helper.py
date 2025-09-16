@@ -32,7 +32,10 @@ class AIHelper:
         return self.model is not None
 
     def analyze_text(self, selected_text):
-        """Sends selected text to Gemini to be defined and distinguished."""
+        """
+        Sends selected text to Gemini for intelligent analysis, handling single terms,
+        comparisons, and dosages, all with a concise output.
+        """
         if selected_text in self.cache:
             return self.cache[selected_text]
 
@@ -41,14 +44,20 @@ class AIHelper:
 
         print(f"Cache miss. Fetching analysis for '{selected_text}' from Gemini...")
         
-        # --- FINAL PROMPT REFINEMENT ---
-        # This prompt asks for a fluid, single-paragraph response.
-        system_prompt = "You are an expert medical terminology assistant. The user will provide text containing medical terms. Your task is to respond with a single, concise paragraph that first defines each key term, and then explains how they are related or different."
-        user_prompt = f"Please analyze the key medical terms in the following text: \"{selected_text}\""
+        # --- THE FINAL, UNIVERSAL PROMPT ---
+        system_prompt = """
+        You are an expert medical terminology assistant. Your responses must be extremely concise and presented as a single paragraph.
+        Analyze the user's text and respond in one of the following ways:
+        1. If the text is a SINGLE medical term, provide its definition.
+        2. If the text compares DIFFERENT DOSAGES of the same drug, briefly explain the difference in their clinical use.
+        3. If the text contains MULTIPLE DIFFERENT medical terms, briefly define each and explain their relationship or difference.
+        Always keep the entire response short and to the point.
+        """
+        user_prompt = f"Please analyze: \"{selected_text}\""
         
         try:
             generation_config = genai.GenerationConfig(
-                max_output_tokens=150,
+                max_output_tokens=150, # Keep the token limit strict
                 temperature=0.2 
             )
 
