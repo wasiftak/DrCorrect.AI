@@ -5,6 +5,11 @@ DrCorrect.AI is a web-based text editor designed to assist medical professionals
 
 The application features a modern, minimalist user interface inspired by digital notebooks, creating a focused and pleasant writing environment.
 
+## 🚀 Live Demo
+You can try DrCorrect.AI live at the following URL:
+
+https://drcorrect-ai.onrender.com/
+
 ## ✨ Key Features
 
   - **📝 Real-time Medical Spelling Suggestions:** As you type, the application suggests completions for medical terms from a comprehensive vocabulary, helping to speed up your writing process.
